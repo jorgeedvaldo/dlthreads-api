@@ -21,28 +21,32 @@ app.get('/', (req, res) => {
       
       try {
         await page.waitForSelector('.x1xmf6yo img');
+
+        const imgElements = await page.$$('img');
+        if (imgElements.length >= 1) {
+          const secondImgSrc = await page.evaluate((img) => img.src, imgElements[3]);
+          console.log('Src do segundo elemento <img>: ', secondImgSrc);
+          FinalUrl = secondImgSrc;
+          //res.send(secondImgSrc + ' Hello, World! ' + req.query.postid);
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ 
+            url: FinalUrl,
+            status: true
+          }));
+        } else {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ 
+            url: FinalUrl,
+            status: false
+          }));
+        }
       } catch (error) {
-        console.error(error);
-        // Expected output: ReferenceError: nonExistentFunction is not defined
-        // (Note: the exact output may be browser-dependent)
-      }
-      
-    
-      const imgElements = await page.$$('img');
-      if (imgElements.length >= 1) {
-        const secondImgSrc = await page.evaluate((img) => img.src, imgElements[3]);
-        console.log('Src do segundo elemento <img>: ', secondImgSrc);
-        FinalUrl = secondImgSrc;
-        //res.send(secondImgSrc + ' Hello, World! ' + req.query.postid);
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify({ 
           url: FinalUrl,
-          status: true
+          status: false
         }));
-      } else {
-        console.log('Não há segundo elemento <img> na página.');
-      }
-      
+      }      
     
       // Fechar o Chromium
       await browser.close();
